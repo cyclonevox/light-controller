@@ -32,11 +32,13 @@ const int RELAY_PIN = 8;
 const bool RELAY_ACTIVE_HIGH = true;
 const char AP_SSID[] = "Light-Setup";
 
-const uint32_t MAGIC_SAVED = 0x4C495445;
-const uint32_t MAGIC_FORGOT = 0x434C4541;
+enum WifiState {
+  WIFI_NONE = 0,
+  WIFI_SAVED = 1
+};
 
 struct WifiCreds {
-  uint32_t magic;
+  int state;
   char ssid[33];
   char pass[65];
 };
@@ -236,12 +238,12 @@ bool consumeDoubleReset() {
 
 void forgetWifi() {
   WifiCreds creds = {};
-  creds.magic = MAGIC_FORGOT;
+  creds.state = WIFI_NONE;
   saveCreds(creds);
 }
 
 bool credsUsable(const WifiCreds& creds) {
-  return creds.magic == MAGIC_SAVED && creds.ssid[0] != '\0';
+  return creds.state == WIFI_SAVED && creds.ssid[0] != '\0';
 }
 
 void urlDecode(const char* src, char* dst, size_t dstLen) {
@@ -315,25 +317,17 @@ void rebootSoon() {
   NVIC_SystemReset();
 }
 
-void handleClient(WiFiClient client) {
-  String req;
-  const unsigned long start = millis();
-  while (client.connected() && millis() - start < 2000) {
-    while (client.available()) {
-      req += (char)client.read();
-      if (req.length() > 2500 || req.endsWith("\r\n\r\n") || req.indexOf('\n') >= 0) {
-        goto handle;
-      }
-    }
-  }
+bool requestReady(const String& req) {
+  return req.length() > 2500 || req.endsWith("\r\n\r\n") || req.indexOf('\n') >= 0;
+}
 
-handle:
+void dispatchRequest(WiFiClient& client, const String& req) {
   if (req.startsWith("GET /save")) {
     WifiCreds creds = {};
     extractParam(req, "ssid", creds.ssid, sizeof(creds.ssid));
     extractParam(req, "pass", creds.pass, sizeof(creds.pass));
     if (creds.ssid[0] != '\0') {
-      creds.magic = MAGIC_SAVED;
+      creds.state = WIFI_SAVED;
       saveCreds(creds);
       sendHtml(client, SAVED_PAGE);
       delay(1);
@@ -371,6 +365,21 @@ handle:
 
   delay(1);
   client.stop();
+}
+
+void handleClient(WiFiClient client) {
+  String req;
+  const unsigned long start = millis();
+  while (client.connected() && millis() - start < 2000) {
+    while (client.available()) {
+      req += (char)client.read();
+      if (requestReady(req)) {
+        dispatchRequest(client, req);
+        return;
+      }
+    }
+  }
+  dispatchRequest(client, req);
 }
 
 void startConfigPortal() {
