@@ -1,4 +1,7 @@
 build/
+test/build/
+__pycache__/
+*.pyc
 *.elf
 *.hex
 *.bin

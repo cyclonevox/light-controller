@@ -1,0 +1,4 @@
+# Optional C name overrides. One pair per line: filename  SYMBOL
+# Files not listed still use the default rule: light.html -> LIGHT_PAGE
+#
+# light.html  LIGHT_PAGE
