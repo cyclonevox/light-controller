@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#101216">
+  <title>配置灯光</title>
+  <style>
+    :root { color-scheme: dark; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; min-height: 100dvh; font-family: system-ui, sans-serif;
+      background: #101216; color: #e8eaed; padding: 28px 20px;
+      display: flex; flex-direction: column; align-items: center;
+    }
+    h1 { font-size: 1.1rem; letter-spacing: .08em; color: #9aa0a6; }
+    form, p { width: min(100%, 360px); }
+    label { display: block; margin: 16px 0 8px; color: #9aa0a6; font-size: .9rem; }
+    input {
+      width: 100%; padding: 14px; border: 0; border-radius: 12px;
+      background: #2a2e33; color: #fff; font-size: 1rem;
+    }
+    button {
+      width: 100%; margin-top: 24px; padding: 14px; border: 0; border-radius: 12px;
+      background: #e8b931; color: #1a1403; font-size: 1rem; font-weight: 700;
+    }
+    p { color: #9aa0a6; line-height: 1.5; font-size: .9rem; }
+  </style>
+</head>
+<body>
+  <h1>配置 WiFi</h1>
+  <p>只支持 2.4GHz。保存后板子会重启，点阵滚动 IP 后即可开关灯。</p>
+  <form action="/save" method="get">
+    <label>WiFi 名称</label>
+    <input name="ssid" autocomplete="off" required>
+    <label>密码（开放网络可留空）</label>
+    <input name="pass" type="password">
+    <button type="submit">保存并连接</button>
+  </form>
+</body>
+</html>

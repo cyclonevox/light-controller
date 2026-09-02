@@ -3,6 +3,7 @@ set -euo pipefail
 
 CLI="${HOME}/.local/bin/arduino-cli"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+python3 "$SCRIPT_DIR/embed_pages.py"
 FQBN="arduino:renesas_uno:unor4wifi"
 
 "$CLI" compile --fqbn "$FQBN" "$SCRIPT_DIR"
